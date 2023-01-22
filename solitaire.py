@@ -18,6 +18,8 @@ class Solitaire(arcade.Window):
         self.held_cards = None
         self.held_cards_original_position = None
         self.pile_mat_list = None
+        self.piles = None
+        self.primary_card = None
 
     def setup(self):
         self.held_cards = []
@@ -33,6 +35,7 @@ class Solitaire(arcade.Window):
         pile = arcade.SpriteSolidColor(const.MAT_WIDTH, const.MAT_HEIGHT, arcade.csscolor.BROWN)
         pile.position = const.START_X + const.X_SPACING, const.BOTTOM_Y
         self.pile_mat_list.append(pile)
+
 
         for i in range(7):
             pile = arcade.SpriteSolidColor(const.MAT_WIDTH, const.MAT_HEIGHT, arcade.csscolor.BROWN)
@@ -56,6 +59,10 @@ class Solitaire(arcade.Window):
         for pos1 in range(len(self.card_list)):
             pos2 = random.randrange(len(self.card_list))
             self.card_list.swap(pos1, pos2)
+
+        self.piles = [[] for _ in range(const.PILE_COUNT)]
+        for card in self.card_list:
+            self.piles[const.BOTTOM_FACE_DOWN_PILE].append(card)
          
         
 
@@ -73,6 +80,35 @@ class Solitaire(arcade.Window):
             self.held_cards = [primary_card]
             self.held_cards_original_position = [self.held_cards[0].position]
             self.pull_to_top(self.held_cards[0])
+
+    def check_top_move_rules(self,pile):
+        #print(self.held_cards[0].suit)
+        #print(self.held_cards[0].value)
+        #print(self.__dict__)
+        #print(self.pile_mat_list.index(pile))
+        #print(len(self.piles[9]))
+        check_value = self.held_cards[0].value
+
+        if(self.held_cards[0].value) == "A":
+            check_value = 1
+        elif(self.held_cards[0].value) == "J":
+            check_value = 11
+        elif(self.held_cards[0].value) == "Q":
+            check_value = 12
+        elif(self.held_cards[0].value) == "K":
+            check_value = 13
+
+        if (len(self.piles[self.pile_mat_list.index(pile)])) < 1:
+            if int(check_value) == (len(self.piles[self.pile_mat_list.index(pile)])+1):
+                return(True)
+        elif int(check_value) == (len(self.piles[self.pile_mat_list.index(pile)])+1) and self.piles[self.pile_mat_list.index(pile)][0].suit == self.held_cards[0].suit:
+                print(self.piles[self.pile_mat_list.index(pile)][0].suit)
+                print(self.held_cards[0].suit)
+                return(True)
+        else:
+             return(False)
+    
+    
         
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
@@ -84,15 +120,50 @@ class Solitaire(arcade.Window):
         reset_position = True
 
         if arcade.check_for_collision(self.held_cards[0], pile):
-            for i, dropped_card in enumerate(self.held_cards):
+
+            pile_index = self.pile_mat_list.index(pile)
+
+            if pile_index == self.get_pile_for_card(self.held_cards[0]):
+                pass
+
+            elif const.PLAY_PILE_1 <= pile_index <= const.PLAY_PILE_7:
+                if len(self.piles[pile_index]) > 0:
+                    top_card = self.piles[pile_index][-1]
+                    for i, dropped_card in enumerate(self.held_cards):
+                        dropped_card.position = top_card.center_x, \
+                                                top_card.center_y - const.CARD_VERTICAL_OFFSET * 1
+                else:
+                    for i, dropped_card in enumerate(self.held_cards):
+                        dropped_card.position = pile.center_x, \
+                                                pile.center_y - const.CARD_VERTICAL_OFFSET * 1
+                for card in self.held_cards:
+                    self.move_card_to_new_pile(card,pile_index)
+
+            
+                reset_position = False          # if successful
+
+
+            elif const.TOP_PILE_1 <= pile_index <= const.TOP_PILE_4 and len(self.held_cards) == 1 and self.check_top_move_rules(pile)== True:
+                self.held_cards[0].position = pile.position
+                for card in self.held_cards:
+                    self.move_card_to_new_pile(card, pile_index)
+                    
+                    
+
+                reset_position = False          # if successful
+
+            for i, dropped_card in enumerate(self.held_cards):          #center cards on bottom row
                 dropped_card.position = pile.center_x, pile.center_y
-            reset_position = False
+
         
+
         if reset_position:
             for pile_index, card in enumerate(self.held_cards):
                 card.position = self.held_cards_original_position[pile_index]
 
         self.held_cards = []
+
+        
         
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
@@ -104,6 +175,22 @@ class Solitaire(arcade.Window):
     def pull_to_top(self, card: arcade.Sprite):
         self.card_list.remove(card)
         self.card_list.append(card)
+    
+    def get_pile_for_card(self,card):
+        for index, pile in enumerate(self.piles):
+            if card in pile:
+                return index
+
+    def remove_card_from_pile(self,card):
+        for pile in self.piles:
+            if card in pile:
+                pile.remove(card)
+                break
+    
+    def move_card_to_new_pile(self,card, pile_index):
+        self.remove_card_from_pile(card)
+        self.piles[pile_index].append(card)
+
 
 
 def main():
