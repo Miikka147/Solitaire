@@ -50,11 +50,15 @@ class Solitaire(arcade.Window):
 
         self.card_list = arcade.SpriteList()
 
+        
         for card_suit in const.CARD_SUITS:
+            i=0
             for card_value in const.CARD_VALUES:
-                card = cardsetup.Card(card_suit, card_value, const.CARD_SCALE)
+                card_numeric = const.CARD_NUMERIC_VALUES[i]
+                card = cardsetup.Card(card_suit, card_value,card_numeric, const.CARD_SCALE)
                 card.position = const.START_X, const.BOTTOM_Y
                 self.card_list.append(card)
+                i=i+1
         
         for pos1 in range(len(self.card_list)):
             pos2 = random.randrange(len(self.card_list))
@@ -87,6 +91,8 @@ class Solitaire(arcade.Window):
         #print(self.__dict__)
         #print(self.pile_mat_list.index(pile))
         #print(len(self.piles[9]))
+          #print(self.piles[self.pile_mat_list.index(pile)][0].suit)
+               # print(self.held_cards[0].suit)
         check_value = self.held_cards[0].value
 
         if(self.held_cards[0].value) == "A":
@@ -98,17 +104,36 @@ class Solitaire(arcade.Window):
         elif(self.held_cards[0].value) == "K":
             check_value = 13
 
-        if (len(self.piles[self.pile_mat_list.index(pile)])) < 1:
-            if int(check_value) == (len(self.piles[self.pile_mat_list.index(pile)])+1):
+        if (len(self.piles[self.pile_mat_list.index(pile)])) < 1:  # if top pile is empty
+            if int(check_value) == (len(self.piles[self.pile_mat_list.index(pile)])+1): # check the card is an ace
                 return(True)
-        elif int(check_value) == (len(self.piles[self.pile_mat_list.index(pile)])+1) and self.piles[self.pile_mat_list.index(pile)][0].suit == self.held_cards[0].suit:
-                print(self.piles[self.pile_mat_list.index(pile)][0].suit)
-                print(self.held_cards[0].suit)
-                return(True)
+        elif int(check_value) == (len(self.piles[self.pile_mat_list.index(pile)])+1) and self.piles[self.pile_mat_list.index(pile)][0].suit == self.held_cards[0].suit: # check card suit is same as the lowest card on the pile & card number is 1 higher than top card on pile
+            print(len(self.piles[self.pile_mat_list.index(pile)])+1)
+            return(True)
         else:
              return(False)
+
+    def check_bot_move_rules(self,pile):
+        check_color = ""
+
+        if(self.held_cards[0].suit) == "Diamonds" or (self.held_cards[0].suit) == "Hearts":
+            check_color = "red"
+        else:
+            check_color = "black"
+
     
-    
+        if (len(self.piles[self.pile_mat_list.index(pile)])) > 0:
+            print(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value)
+
+        if (len(self.piles[self.pile_mat_list.index(pile)])) < 1:
+            return(True)
+        elif  int(self.held_cards[0].numeric_value) + 1 == int(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value) and (check_color == "black" and self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Diamonds" or self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Hearts"):
+            return(True)
+        elif int(self.held_cards[0].numeric_value) + 1 == int(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value) and (check_color == "red" and self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Spades" or self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Clubs"):
+            return(True)
+        else:
+            return(False)
+  
         
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
@@ -126,7 +151,7 @@ class Solitaire(arcade.Window):
             if pile_index == self.get_pile_for_card(self.held_cards[0]):
                 pass
 
-            elif const.PLAY_PILE_1 <= pile_index <= const.PLAY_PILE_7:
+            elif const.PLAY_PILE_1 <= pile_index <= const.PLAY_PILE_7 and self.check_bot_move_rules(pile) == True:
                 if len(self.piles[pile_index]) > 0:
                     top_card = self.piles[pile_index][-1]
                     for i, dropped_card in enumerate(self.held_cards):
@@ -139,11 +164,11 @@ class Solitaire(arcade.Window):
                 for card in self.held_cards:
                     self.move_card_to_new_pile(card,pile_index)
 
-            
+               
                 reset_position = False          # if successful
 
 
-            elif const.TOP_PILE_1 <= pile_index <= const.TOP_PILE_4 and len(self.held_cards) == 1 and self.check_top_move_rules(pile)== True:
+            elif const.TOP_PILE_1 <= pile_index <= const.TOP_PILE_4 and len(self.held_cards) == 1 and self.check_top_move_rules(pile) == True:
                 self.held_cards[0].position = pile.position
                 for card in self.held_cards:
                     self.move_card_to_new_pile(card, pile_index)
