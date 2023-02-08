@@ -18,6 +18,7 @@ BOTTOM_Y = MAT_HEIGHT / 2 + MAT_HEIGHT * VERTICAL_MARGIN_PERCENT
 
 START_X = MAT_WIDTH / 2 + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 
+
 CARD_VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 CARD_NUMERIC_VALUES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
 CARD_SUITS = ["Clubs", "Hearts", "Spades", "Diamonds"]
@@ -52,3 +53,8 @@ TOP_PILE_1 = 9
 TOP_PILE_2 = 10
 TOP_PILE_3 = 11
 TOP_PILE_4 = 12
+
+FACE_DOWN_IMAGE = ":resources:images/cards/cardBack_red2.png"
+
+# RULES
+CARDS_TO_FLIP = 3
