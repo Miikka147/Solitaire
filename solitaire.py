@@ -20,10 +20,31 @@ class Solitaire(arcade.Window):
         self.pile_mat_list = None
         self.piles = None
         self.primary_card = None
+        self.total_time = 0.0
+        self.moves = 0
+        self.timer_text = arcade.Text(
+            text="00:00:00",
+            start_x=SCREEN_WIDTH // 2,
+            start_y=SCREEN_HEIGHT - SCREEN_HEIGHT + 20,
+            color=arcade.color.WHITE,
+            font_size=20,
+            anchor_x="center",
+        )
+        self.moves_text = arcade.Text(
+            text="MOVES: 0",
+            start_x=SCREEN_WIDTH // 2 + SCREEN_WIDTH // 5,
+            start_y=SCREEN_HEIGHT - SCREEN_HEIGHT + 20,
+            color=arcade.color.WHITE,
+            font_size=20,
+            anchor_x="center",
+        )
+        
 
     def setup(self):
         self.held_cards = []
         self.held_cards_original_position = []
+        self.total_time = 0.0
+        self.moves = 0
 
 
         self.pile_mat_list: arcade.SpriteList = arcade.SpriteList()
@@ -81,14 +102,25 @@ class Solitaire(arcade.Window):
 
         for i in range(const.PLAY_PILE_1, const.PLAY_PILE_7 + 1):
             self.piles[i][-1].face_up()
-
          
-        
-
     def on_draw(self):
         self.clear()
         self.pile_mat_list.draw()
         self.card_list.draw()
+        self.timer_text.draw()
+        self.moves_text.draw()
+
+
+    def on_update(self, delta_time):
+        if self.moves > 0:
+            self.total_time += delta_time
+            minutes = int(self.total_time) // 60
+            seconds = int(self.total_time) % 60
+            self.timer_text.text = f"{minutes:02d}:{seconds:02d}"
+            self.moves_text.text = "MOVES: "+str(self.moves)
+
+    
+        
 
     def on_mouse_press(self, x, y, button, key_modifiers):
         cards = arcade.get_sprites_at_point((x, y), self.card_list)
@@ -109,8 +141,10 @@ class Solitaire(arcade.Window):
                     self.piles[const.BOTTOM_FACE_DOWN_PILE].remove(card)
                     self.piles[const.BOTTOM_FACE_UP_PILE].append(card)
                     self.pull_to_top(card)
+                    self.moves +=1
+                    print(self.moves)
             
-            elif primary_card.is_face_down:
+            elif primary_card.is_face_down and self.piles[pile_index].index(primary_card) == len(self.piles[pile_index])-1:
                 primary_card.face_up()
             
             else:
@@ -177,14 +211,18 @@ class Solitaire(arcade.Window):
         else:
             check_color = "black"
         
-        print(check_color)
+        #print(check_color)
 
     
-        if (len(self.piles[self.pile_mat_list.index(pile)])) > 0:
-            print(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value)
+        #if (len(self.piles[self.pile_mat_list.index(pile)])) > 0:
+            #print(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value)
+        print(self.held_cards[0].numeric_value)
 
         if (len(self.piles[self.pile_mat_list.index(pile)])) < 1:
-            return(True)
+            if(int(self.held_cards[0].numeric_value) == 13):
+                return(True)
+            else:
+                return(False)
         elif  int(self.held_cards[0].numeric_value) + 1 == int(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value) and check_color == "black" and (self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Diamonds" or self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Hearts"):
             return(True)
         elif int(self.held_cards[0].numeric_value) + 1 == int(self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].numeric_value) and check_color == "red" and (self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Spades" or self.piles[self.pile_mat_list.index(pile)][len(self.piles[self.pile_mat_list.index(pile)])-1].suit == "Clubs"):
@@ -220,7 +258,7 @@ class Solitaire(arcade.Window):
                     for i, dropped_card in enumerate(self.held_cards):
                         dropped_card.position = top_card.center_x, \
                                                 top_card.center_y - const.CARD_VERTICAL_OFFSET * (1*(i+1))
-                    print(dropped_card.position)
+                    #print(dropped_card.position)
                  
 
                 else:
@@ -244,18 +282,18 @@ class Solitaire(arcade.Window):
                     self.move_card_to_new_pile(card, pile_index)
                     
                     
-
+                
                 reset_position = False          # if successful
-
-            
-
         
-
         if reset_position:
             for pile_index, card in enumerate(self.held_cards):
                 card.position = self.held_cards_original_position[pile_index]
+        else:
+            self.moves +=1
+            print(self.moves)
 
         self.held_cards = []
+       
 
         
         

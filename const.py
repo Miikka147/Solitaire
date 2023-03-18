@@ -57,4 +57,4 @@ TOP_PILE_4 = 12
 FACE_DOWN_IMAGE = ":resources:images/cards/cardBack_red2.png"
 
 # RULES
-CARDS_TO_FLIP = 3
+CARDS_TO_FLIP = 1
