@@ -56,5 +56,8 @@ TOP_PILE_4 = 12
 
 FACE_DOWN_IMAGE = ":resources:images/cards/cardBack_red2.png"
 
+BACKGROUND_IMAGE = "resources/images/backgrounds/628301.jpg"
+MENU_BACKGROUND_IMAGE = "resources/images/menu/menu_back.jpg"
+
 # RULES
 CARDS_TO_FLIP = 1

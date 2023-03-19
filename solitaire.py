@@ -2,17 +2,84 @@ import arcade
 import const
 import cardsetup
 import random
+import arcade.gui
+
 
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 SCREEN_TITLE = "Solitaire"
+SCENE_MENU = 'SCENE_MENU'
+SCENE_GAME = 'SCENE_GAME'
 
-class Solitaire(arcade.Window):
+
+class GameView(arcade.Window):
 
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT,SCREEN_TITLE)
+        super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_TITLE)
+        
+        self.scene = SCENE_MENU
 
-        arcade.set_background_color(arcade.color.CRIMSON)
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+       
+        centering_widget = arcade.gui.UIAnchorLayout(
+            anchor_x="center_x",
+            anchor_y="top"
+        )
+
+        v_box = arcade.gui.UIBoxLayout(
+            vertical=True,
+            padding=(350, 100, 100, 100),
+            align_items="center",
+            size_hint=(1.0, None),
+            height=SCREEN_HEIGHT-300
+        )
+        
+        menu_title = arcade.gui.UILabel(text="SOLITAIRE",
+                                              width=450,
+                                              height=130,
+                                              font_size=50,
+                                              align="center",
+                                              font_name="Kenney Future"
+                                              )
+
+        
+
+        start_button = arcade.gui.UIFlatButton(
+            text="START",
+            width=200,
+            height=60
+        )
+        settings_button = arcade.gui.UIFlatButton(
+            text="SETTINGS",
+            width=200,
+            height=60
+        )
+        quit_button = arcade.gui.UIFlatButton(
+            text="QUIT",
+            width=200,
+            height=50
+        )
+        
+        v_box.add(menu_title.with_padding(bottom=10))
+        v_box.add(start_button.with_padding(bottom=10))
+        v_box.add(settings_button.with_padding(bottom=10))
+        v_box.add(quit_button)
+        
+
+        @start_button.event("on_click")
+        def on_click_start_button(event):
+            self.scene = SCENE_GAME
+
+        centering_widget.add(v_box)
+        
+        
+
+        self.manager.add(centering_widget)
+        
+
+        self.background = None
 
         self.card_list = None
         self.held_cards = None
@@ -45,6 +112,8 @@ class Solitaire(arcade.Window):
         self.held_cards_original_position = []
         self.total_time = 0.0
         self.moves = 0
+        self.background = arcade.load_texture(const.BACKGROUND_IMAGE)
+        self.menu_background = arcade.load_texture(const.MENU_BACKGROUND_IMAGE)
 
 
         self.pile_mat_list: arcade.SpriteList = arcade.SpriteList()
@@ -105,10 +174,20 @@ class Solitaire(arcade.Window):
          
     def on_draw(self):
         self.clear()
-        self.pile_mat_list.draw()
-        self.card_list.draw()
-        self.timer_text.draw()
-        self.moves_text.draw()
+
+        if self.scene == SCENE_MENU:
+            arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.menu_background)
+            self.manager.draw()
+            
+
+        elif self.scene == SCENE_GAME:
+            arcade.draw_lrwh_rectangle_textured(0,0,
+                                          SCREEN_WIDTH, SCREEN_HEIGHT,self.background)
+            self.pile_mat_list.draw()
+            self.card_list.draw()
+            self.timer_text.draw()
+            self.moves_text.draw()
+        
 
 
     def on_update(self, delta_time):
@@ -323,10 +402,51 @@ class Solitaire(arcade.Window):
         self.remove_card_from_pile(card)
         self.piles[pile_index].append(card)
 
+class SettingsView(arcade.View):
+    
+   
+    def on_show_view(self):
+
+        arcade.set_background_color(arcade.csscolor.DARK_SALMON)
+        
+            
+            
+
+    def on_draw(self):
+    
+        self.clear()
+
+        self.start_button = arcade.draw_text("START", self.window.width / 2, self.window.height / 1.5 ,
+                         arcade.color.WHITE, font_size=50, anchor_x="center")
+        self.settings_button = arcade.draw_text("SETTINGS", self.window.width / 2, self.window.height/1.5  - 130,
+                         arcade.color.WHITE, font_size=50, anchor_x="center")
+        self.quit_button = arcade.draw_text("QUIT", self.window.width / 2, self.window.height / 1.5-260,
+                         arcade.color.WHITE, font_size=50, anchor_x="center")
+        
+        
+    def on_mouse_press(self, _x, _y, _button, _modifiers):
+        print(_button)
+        game_view = GameView()
+        game_view.setup()
+        self.window.show_view(game_view)
+
+        
+        
+    
+        
+        
+    
+      
+
+
+
+
+        
+
 
 
 def main():
-    window = Solitaire()
+    window = GameView()
     window.setup()
     arcade.run()
 
